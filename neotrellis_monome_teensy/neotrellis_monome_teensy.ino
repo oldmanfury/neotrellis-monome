@@ -41,7 +41,7 @@ char mfgstr[32] = "monome";
 char prodstr[32] = "monome";
 
 bool isInited = false;
-int toggle = 0;
+int toggle = 1;
 int selected_palette = 0;
 elapsedMillis monomeRefresh;
 
@@ -156,11 +156,15 @@ TrellisCallback keyCallback(keyEvent evt){
          toggle = toggle%2;
           if (toggle){
               DEV_BAUD = 57600;
+              Serial1.end();
              Serial1.begin(DEV_BAUD);
+             Serial1.clear();
           }
            else {
               DEV_BAUD = 115200;
+              Serial1.end();
               Serial1.begin(DEV_BAUD);
+              Serial1.clear();
           }
        }           
         if (y<7) {setGamma(y);}
@@ -199,7 +203,8 @@ void setup(){
   USBDevice.setManufacturerDescriptor(mfgstr);
   USBDevice.setProductDescriptor(prodstr);
 */
-  Serial.begin(115200);
+  Serial.begin(57600);
+// Serial.begin(115200);
 
   R = 255;
   G = 255;
@@ -208,14 +213,18 @@ void setup(){
 //  delay(200);
 
   trellis.begin();
-  
   if (!trellis.begin()) {
     Serial.println("trellis.begin() failed!");
     Serial.println("check your addresses.");
     Serial.println("reset to try again.");
     while(1);  // loop forever
   }
+  Serial1.end();
   Serial1.begin(DEV_BAUD);
+  //Serial1.attachRts(2);
+  //Serial1.attachCts(20);
+  //Serial1.flush();
+  Serial1.clear();
   mdp.isMonome = true;
   mdp.deviceID = deviceID;
   mdp.setupAsGrid(NUM_ROWS, NUM_COLS);
