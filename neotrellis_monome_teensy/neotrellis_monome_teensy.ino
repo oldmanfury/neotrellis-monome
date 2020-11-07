@@ -27,14 +27,14 @@ uint32_t hexColor;
 int BRIGHTNESS = 127; // overall grid brightness - use gamma table below to adjust levels
 int resetkeyspressed = 0;
 boolean allthreekeys = false;
-int DEV_BAUD = 115200; // 115200 for norns, 57600 for teletype
+int DEV_BAUD = 57600; // 115200 for norns, 57600 for teletype
 
 uint8_t R;
 uint8_t G;
 uint8_t B;
 
 // set your monome device name here
-String deviceID = "neo-monome";
+String deviceID = "monome";
 
 // DEVICE INFO FOR ADAFRUIT M0 or M4
 char mfgstr[32] = "monome";
@@ -128,7 +128,7 @@ TrellisCallback keyCallback(keyEvent evt){
   y = evt.bit.NUM / NUM_COLS; //NUM_COLS; 
   if(evt.bit.EDGE == SEESAW_KEYPAD_EDGE_RISING){
     //on
-    mdp.sendGridKey(x, y, 1);
+    if (isInited){mdp.sendGridKey(x, y, 1);}
 //------------color palette initial selection-------------------
     if ((x==13 && y==7) or (x==14 && y==7)or (x==15 && y==7)){
       resetkeyspressed += 1;
@@ -144,27 +144,30 @@ TrellisCallback keyCallback(keyEvent evt){
         }
         trellis.show();  
         sendLeds();
-        delay(1000);
+        delay(500);
         for(int i=0; i<8; i++){
            colorpalettedisplay(8,i);
         }
         trellis.show();  
-        sendLeds();      
-      }else if (isInited == false && x==0){
+        sendLeds();    
+        mdp.isMonome = true;
+        mdp.deviceID = deviceID;
+        mdp.setupAsGrid(NUM_ROWS, NUM_COLS);  
+        Serial1.clear();
+        Serial1.end();
+        Serial1.begin(DEV_BAUD);
+        Serial1.clear();
+        Serial1.flush();       
+      }
+      else if (isInited == false && x==0){
         if (x==0 && y==7) {
          toggle += 1;
          toggle = toggle%2;
           if (toggle){
               DEV_BAUD = 57600;
-              Serial1.end();
-             Serial1.begin(DEV_BAUD);
-             Serial1.clear();
           }
            else {
               DEV_BAUD = 115200;
-              Serial1.end();
-              Serial1.begin(DEV_BAUD);
-              Serial1.clear();
           }
        }           
         if (y<7) {setGamma(y);}
@@ -187,7 +190,7 @@ TrellisCallback keyCallback(keyEvent evt){
          delay(2000);
          allthreekeys = false;
     }
-    mdp.sendGridKey(x, y, 0); 
+  if (isInited) {mdp.sendGridKey(x, y, 1);} 
   }
   return 0;
   
@@ -203,8 +206,8 @@ void setup(){
   USBDevice.setManufacturerDescriptor(mfgstr);
   USBDevice.setProductDescriptor(prodstr);
 */
-  Serial.begin(57600);
-// Serial.begin(115200);
+//  Serial.begin(57600);
+ Serial.begin(115200);
 
   R = 255;
   G = 255;
@@ -219,15 +222,13 @@ void setup(){
     Serial.println("reset to try again.");
     while(1);  // loop forever
   }
-  Serial1.end();
-  Serial1.begin(DEV_BAUD);
+//  Serial1.end();
+//  Serial1.begin(DEV_BAUD);
   //Serial1.attachRts(2);
   //Serial1.attachCts(20);
   //Serial1.flush();
-  Serial1.clear();
-  mdp.isMonome = true;
-  mdp.deviceID = deviceID;
-  mdp.setupAsGrid(NUM_ROWS, NUM_COLS);
+//  Serial1.clear();
+
 
   // key callback
   uint8_t x, y;

@@ -14,12 +14,22 @@ void MonomeSerialDevice::initialize() {
     clearAllLeds();
     arcDirty = false;
     gridDirty = false;
-       Serial1.write((uint8_t)0x00); // action: response, 0x00 = system
-       Serial1.write((uint8_t)0x01); // section id, 1 = led-grid, 2 = key-grid, 5 = encoder/arc  ## NEED devSect variable
-       Serial1.write((uint8_t)0x02);   // one Quad is 64 buttons
-       Serial1.write((uint8_t)0x00); // action: response, 0x00 = system
-       Serial1.write((uint8_t)0x02); // section id, 1 = led-grid, 2 = key-grid, 5 = encoder/arc  ## NEED devSect variable
-       Serial1.write((uint8_t)0x02);   // one Quad is 64 buttons
+//    char devID[] = "neo-monome";    
+//       Serial1.write((uint8_t)0x00); // action: response, 0x00 = system
+//       Serial1.write((uint8_t)0x01); // section id, 1 = led-grid, 2 = key-grid, 5 = encoder/arc  ## NEED devSect variable
+//       Serial1.write((uint8_t)0x02);   // one Quad is 64 buttons
+//       Serial1.write((uint8_t)0x00); // action: response, 0x00 = system
+//       Serial1.write((uint8_t)0x02); // section id, 1 = led-grid, 2 = key-grid, 5 = encoder/arc  ## NEED devSect variable
+//       Serial1.write((uint8_t)0x02);   // one Quad is 64 buttons
+//
+//            Serial1.write((uint8_t)0x01);        // action: response, 0x01
+//            for (int i = 0; i < 32; i++) {          // has to be 32
+//                if (i < strlen(devID)) {
+//                  Serial1.write(devID[i]);
+//                } else {
+//                  Serial1.write(0x00);
+//                }
+//            }
 }
 
 void MonomeSerialDevice::setupAsGrid(uint8_t _rows, uint8_t _columns) {
@@ -242,7 +252,7 @@ void MonomeSerialDevice::processSerial() {
             Serial1.write((uint8_t)0x01); // section id, 1 = led-grid, 2 = key-grid, 5 = encoder/arc	## NEED devSect variable
             Serial1.write((uint8_t)numQuads);   // one Quad is 64 buttons
             Serial1.write((uint8_t)0x00); // action: response, 0x00 = system
-            Serial1.write((uint8_t)0x01); // section id, 1 = led-grid, 2 = key-grid, 5 = encoder/arc  ## NEED devSect variable
+            Serial1.write((uint8_t)0x02); // section id, 1 = led-grid, 2 = key-grid, 5 = encoder/arc  ## NEED devSect variable
             Serial1.write((uint8_t)numQuads);   // one Quad is 64 buttons
             break;
 
