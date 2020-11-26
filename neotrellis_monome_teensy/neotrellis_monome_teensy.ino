@@ -129,14 +129,15 @@ TrellisCallback keyCallback(keyEvent evt){
   if(evt.bit.EDGE == SEESAW_KEYPAD_EDGE_RISING){
     //on
     if (isInited){mdp.sendGridKey(x, y, 1);}
-//------------color palette initial selection-------------------
+//------------color palette initial 3 button (lower right) selection-------------------
     if ((x==13 && y==7) or (x==14 && y==7)or (x==15 && y==7)){
       resetkeyspressed += 1;
-      if (resetkeyspressed == 3){
-         allthreekeys = true;
-      }
+     if (resetkeyspressed == 3){
+        allthreekeys = true;
+     }
     }
-    if (isInited == false && x>0){
+//******** press button within desire palette to select **********
+        if (isInited == false && x>0){
         selected_palette = y;
         isInited=true;
         for(int i=0; i<8; i++){
@@ -148,18 +149,17 @@ TrellisCallback keyCallback(keyEvent evt){
         for(int i=0; i<8; i++){
            colorpalettedisplay(8,i);
         }
+        Serial1.clear();
+        Serial1.end();
+        Serial1.begin(DEV_BAUD);
         trellis.show();  
         sendLeds();    
         mdp.isMonome = true;
         mdp.deviceID = deviceID;
         mdp.setupAsGrid(NUM_ROWS, NUM_COLS);  
-        Serial1.clear();
-        Serial1.end();
-        Serial1.begin(DEV_BAUD);
-        Serial1.clear();
-        Serial1.flush();       
       }
-      else if (isInited == false && x==0){
+ //*********** select baud rate with lower left button: yellow TT, white norns ***************
+      if (isInited == false && x==0){
         if (x==0 && y==7) {
          toggle += 1;
          toggle = toggle%2;
@@ -170,13 +170,14 @@ TrellisCallback keyCallback(keyEvent evt){
               DEV_BAUD = 115200;
           }
        }           
-        if (y<7) {setGamma(y);}
+ //*********** select gamma value with left column ***************
+       else if (x==0 && y<7) {setGamma(y);}
         for(int i=0; i<8; i++){
            colorpalettedisplay(i,i);
         }
         gammaselect();
         trellis.show();  
-        sendLeds();       
+       // sendLeds();       
       }
 //--------------------------------------------------------------
   }else if(evt.bit.EDGE == SEESAW_KEYPAD_EDGE_FALLING){
@@ -187,10 +188,9 @@ TrellisCallback keyCallback(keyEvent evt){
     if (allthreekeys && resetkeyspressed == 0){
          colorpaletteselector();
          isInited = false;
-         delay(2000);
          allthreekeys = false;
     }
-  if (isInited) {mdp.sendGridKey(x, y, 1);} 
+    if (isInited) {mdp.sendGridKey(x, y, 0);} 
   }
   return 0;
   
@@ -208,6 +208,16 @@ void setup(){
 */
 //  Serial.begin(57600);
  Serial.begin(115200);
+ Serial1.begin(57600);
+   mdp.isMonome = true;
+   mdp.deviceID = deviceID;
+   mdp.setupAsGrid(NUM_ROWS, NUM_COLS);  
+   int var = 0;
+   while (var < 8) {
+     mdp.poll();
+     var++;
+     delay(100);
+   }       
 
   R = 255;
   G = 255;
@@ -241,17 +251,7 @@ void setup(){
   }
   setBright();
   setGamma(2);
-  delay(300);
-  mdp.setAllLEDs(0);
-  sendLeds();
   monomeRefresh = 0;
-  //isInited = true;
-  // blink one led to show it's started up  
-  trellis.setPixelColor(0, 0xFFFFFF);
-  trellis.show();
-  delay(100);
-  trellis.setPixelColor(0, 0x000000);
-  trellis.show();
   colorpaletteselector();
 }
 
@@ -342,14 +342,14 @@ void setGamma(float value){
 // ***************************************************************************
 
 void loop() {
-
+    if (isInited){
     mdp.poll(); // process incoming serial from Monomes
- 
     // refresh every 16ms or so
     if (isInited && monomeRefresh > 16) {
         trellis.read();
         sendLeds();
         monomeRefresh = 0;
+    }
     }
     else if (isInited==false){
         trellis.read();
